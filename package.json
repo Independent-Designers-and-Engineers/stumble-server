@@ -1,0 +1,12 @@
+{
+  "name": "stumble-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/asu-ide/stumble-server",
+  "author": "Adheesh Wadkar <apwadkar@asu.edu>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.2.0"
+  }
+}
