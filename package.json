@@ -2,15 +2,21 @@
   "name": "stumble-server",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "https://github.com/asu-ide/stumble-server",
+  "repository": "https://github.com/Independent-Designers-and-Engineers/stumble-server",
   "author": "Adheesh Wadkar <apwadkar@asu.edu>",
   "license": "MIT",
+  "homepage": "https://stumble-server.herokuapp.com/",
+  "scripts": {
+    "start:dev": "nodemon index.js",
+    "start": "node index.js"
+  },
   "dependencies": {
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "socket.io": "^2.2.0"
   },
   "devDependencies": {
-    "dotenv": "^8.1.0"
+    "dotenv": "^8.1.0",
+    "nodemon": "^1.19.2"
   }
 }
