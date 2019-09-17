@@ -1,5 +1,8 @@
 // Imports
 const Router = require("express").Router;
+const mongoose = require("mongoose");
+
+const User = require("../models/User");
 
 // Create a new Express router for "/user" route
 const router = Router();
@@ -13,8 +16,33 @@ router.post("/", (req, res) => {
 });
 
 // POST /user/create
-router.post("/create", (req, res) => {
-    // TODO: Implement this (#2)
+router.post("/create", async (req, res) => {
+    const body = req.body;
+    // If any of the fields are not there, send a 400 Bad Request response
+    if (!body.firstName || !body.lastName || !body.phoneNumber || !body.dateOfBirth || !body.password) {
+        res.status(400).send({ message: "One or more fields not present" });
+        return;
+    }
+    // If there is a document already in the database, send a 409 Conflict response
+    let found = false;
+    await User.findOne({ phoneNumber: body.phoneNumber }, (err, user) => {
+        if (user) {
+            found = true;
+        }
+    });
+    // If there isn't a document already, create a new one, save it, and send a 201 Created response
+    if (!found) {
+        const user = new User({
+            name: `${body.firstName} ${body.lastName}`,
+            phoneNumber: body.phoneNumber,
+            dateOfBirth: body.dateOfBirth,
+            password: body.password
+        });
+        user.save();
+        res.status(201).send({ message: "User created" });
+    } else {
+        res.status(409).send({ message: "User already exists" });
+    }
 });
 
 // Export this so it can be used outside
