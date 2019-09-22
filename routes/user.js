@@ -16,7 +16,7 @@ router.post("/", (req, res) => {
 });
 
 // POST /user/create
-router.post("/create", async (req, res) => {
+router.post("/create", (req, res) => {
     const body = req.body;
     // If any of the fields are not there, send a 400 Bad Request response
     if (!body.firstName || !body.lastName || !body.phoneNumber || !body.dateOfBirth || !body.password) {
@@ -24,25 +24,20 @@ router.post("/create", async (req, res) => {
         return;
     }
     // If there is a document already in the database, send a 409 Conflict response
-    let found = false;
-    await User.findOne({ phoneNumber: body.phoneNumber }, (err, user) => {
+    User.findOne({ phoneNumber: body.phoneNumber }, (err, user) => {
         if (user) {
-            found = true;
+            res.status(409).send({ message: "User already exists" });
+        } else {
+            const user = new User({
+                name: `${body.firstName} ${body.lastName}`,
+                phoneNumber: body.phoneNumber,
+                dateOfBirth: body.dateOfBirth,
+                password: body.password
+            });
+            user.save();
+            res.status(201).send({ message: "User created" });
         }
     });
-    // If there isn't a document already, create a new one, save it, and send a 201 Created response
-    if (!found) {
-        const user = new User({
-            name: `${body.firstName} ${body.lastName}`,
-            phoneNumber: body.phoneNumber,
-            dateOfBirth: body.dateOfBirth,
-            password: body.password
-        });
-        user.save();
-        res.status(201).send({ message: "User created" });
-    } else {
-        res.status(409).send({ message: "User already exists" });
-    }
 });
 
 // Export this so it can be used outside
