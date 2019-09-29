@@ -40,27 +40,3 @@ function compareArrays(array1, array2) {
     })
     return sharedItems;
 }
-
-const profile1 =  {
-    "firstName": "Jason",
-    "lastName": "Xu",
-    "phoneNumber": "4804678313",
-    "interests": {
-            "movies": { "items": ["Inception", "Spiderman", "Interstellar"]},
-            "video_games": { "items": ["CS:GO", "R6", "Call of Duty"]}
-    },
-    "age": 19
-}
-
-const profile2 =  {
-    "firstName": "Abid",
-    "lastName": "Hossain",
-    "phoneNumber": "48069696966",
-    "interests": {
-            "movies": { "items": ["Hentai", "Spider", "Interstella"]},
-            "video_games": { "items": ["Minecraft", "R67", "CS:G"]}
-    },
-    "age": 15
-}
-
-console.log(compareProfiles(profile1, profile2));
