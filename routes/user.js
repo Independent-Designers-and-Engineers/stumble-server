@@ -103,5 +103,25 @@ router.get("/current", passport.authenticate("jwt", { session: false }), (req, r
     res.json(req.user);
 });
 
+// GET /user/{id}/profile
+router.get("/:id/profile", (req, res) => {
+    phoneNumber = req.params["id"];
+    let found = false;
+    User.findOne({ phoneNumber: phoneNumber }, (err, user) => {
+        if (user) {
+            found = true;
+            const foundUser = user;
+            delete foundUser.password;
+            delete foundUser.phoneNumber;
+        }
+    });
+    if (!found) {
+        res.status(404).send({ message: "User doesn't exist"});
+    }
+    else {
+        return foundUser;
+    }
+});
+
 // Export this so it can be used outside
 module.exports = router;
