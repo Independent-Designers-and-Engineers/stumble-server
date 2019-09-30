@@ -1,18 +1,62 @@
 // Imports
 const Router = require("express").Router;
 const mongoose = require("mongoose");
-
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const validateLoginInput = require("../models/login");
+const SECRET = process.env.SECRET;
 
 // Create a new Express router for "/user" route
 const router = Router();
 
 // POST /user
-router.post("/", (req, res) => {
+router.post("/login", (req, res) => {
     // TODO: Implement this (#5)
     // If we get a POST request for "/user", just get the firstname and send it back
-    const firstName = req.body.firstName;
-    res.send(firstName + " is logged in");
+
+    const {error, isValid} = validateLoginInput(req.body);
+
+    if (!isValid) {
+        return res.status(400).json(errors);
+    } 
+
+    const { phoneNumber, password } = req.body;
+
+    User.findOne({ phoneNumber }).then((user) => {
+
+        if(!user){
+            errors.phoneNumber = "User not found."
+            return res.status(404).json(errors);
+        }
+
+        bcrypt.compare(password, user.password).then( isMatch => {
+
+            if(isMatch){
+                const payload = {
+                    user_name : user.phoneNumber
+                };
+
+                jwt.sign(payload, SECRET, {expiresIn: 3600}, (err, token) =>{
+
+                    if(err){
+                        console.log(err);
+                    }
+
+                    return res.json({
+
+                        sucess: true,
+                        token: token,
+                        profile: user
+
+                    });
+                });
+            } else {
+                return res.status(400).json({ password: "Password Incorrect"});
+            }
+
+        });
+    });
 });
 
 // POST /user/create
