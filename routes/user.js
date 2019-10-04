@@ -104,7 +104,7 @@ router.get("/current", passport.authenticate("jwt", { session: false }), (req, r
 });
 
 // GET /user/{id}/profile
-router.get("/:id/profile", (req, res) => {
+router.get("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
     const phoneNumber = req.params["id"];
     User.findOne({ phoneNumber: phoneNumber }, (err, user) => {
         if (user) {
