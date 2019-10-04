@@ -1,6 +1,6 @@
 // Imports
 const Router = require("express").Router;
-const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const User = require("../models/User");
 
@@ -20,13 +20,13 @@ router.post("/create", (req, res) => {
     const body = req.body;
     // If any of the fields are not there, send a 400 Bad Request response
     if (!body.firstName || !body.lastName || !body.phoneNumber || !body.dateOfBirth || !body.password) {
-        res.status(400).send({ message: "One or more fields not present" });
+        res.status(400).json({ message: "One or more fields not present" });
         return;
     }
     // If there is a document already in the database, send a 409 Conflict response
     User.findOne({ phoneNumber: body.phoneNumber }, (err, user) => {
         if (user) {
-            res.status(409).send({ message: "User already exists" });
+            res.status(409).json({ message: "User already exists" });
         } else {
             const user = new User({
                 name: `${body.firstName} ${body.lastName}`,
@@ -34,8 +34,18 @@ router.post("/create", (req, res) => {
                 dateOfBirth: body.dateOfBirth,
                 password: body.password
             });
-            user.save();
-            res.status(201).send({ message: "User created" });
+
+            bcrypt.genSalt(10, (err, salt) => {
+                bcrypt.hash(user.password, salt, (err, hash) => {
+                    if (err) {
+                        throw err;
+                    }
+                    user.password = hash;
+                    user.save()
+                        .then(user => res.status(201).json(user))
+                        .catch(console.err);
+                });
+            });
         }
     });
 });
