@@ -119,21 +119,5 @@ router.get("/:id/profile", (req, res) => {
     });
 });
 
-// GET /user/{id}/profile
-router.get("/:id/profile", (req, res) => {
-    const phoneNumber = req.params["id"];
-    User.findOne({ phoneNumber: phoneNumber }, (err, user) => {
-        if (user) {
-            const foundUser = user;
-            delete foundUser.password;
-            delete foundUser.phoneNumber;
-            res.status(200).send(foundUser);
-        }
-        else {
-            res.status(404).send({ message: "User doesn't exist"});
-        }
-    });
-});
-
 // Export this so it can be used outside
 module.exports = router;
