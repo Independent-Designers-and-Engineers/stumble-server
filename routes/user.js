@@ -16,7 +16,7 @@ router.post("/login", (req, res) => {
     // TODO: Implement this (#5)
     // If we get a POST request for "/user", just get the firstname and send it back
 
-    const {error, isValid} = validateLoginInput(req.body);
+    const {errors, isValid} = validateLoginInput(req.body);
 
     if (!isValid) {
         return res.status(400).json(errors);
@@ -47,7 +47,7 @@ router.post("/login", (req, res) => {
                     return res.json({
 
                         sucess: true,
-                        token: 'Bearer ${token}',
+                        token: `Bearer ${token}`,
                         profile: user
 
                     });
