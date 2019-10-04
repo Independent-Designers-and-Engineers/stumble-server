@@ -3,9 +3,7 @@ const Router = require("express").Router;
 
 const bcrypt = require("bcrypt");
 const passport = require("passport");
-
 const User = require("../models/User");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const validateLoginInput = require("../models/login");
 const SECRET = process.env.SECRET;
@@ -49,7 +47,7 @@ router.post("/login", (req, res) => {
                     return res.json({
 
                         sucess: true,
-                        token: token,
+                        token: 'Bearer ${token}',
                         profile: user
 
                     });
