@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const passport = require("passport");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const validateLoginInput = require("../models/login");
+const validateLoginInput = require("../validation/login");
 const SECRET = process.env.SECRET;
 
 // Create a new Express router for "/user" route
@@ -13,49 +13,34 @@ const router = Router();
 
 // POST /user
 router.post("/login", (req, res) => {
-    // TODO: Implement this (#5)
-    // If we get a POST request for "/user", just get the firstname and send it back
-
-    const {error, isValid} = validateLoginInput(req.body);
+    const {errors, isValid} = validateLoginInput(req.body);
 
     if (!isValid) {
         return res.status(400).json(errors);
     } 
 
     const { phoneNumber, password } = req.body;
-
     User.findOne({ phoneNumber }).then((user) => {
-
         if(!user){
-            errors.phoneNumber = "User not found."
+            errors.phoneNumber = "User not found.";
             return res.status(404).json(errors);
         }
-
         bcrypt.compare(password, user.password).then( isMatch => {
-
             if(isMatch){
                 const payload = {
                     user_name : user.phoneNumber
                 };
-
-                jwt.sign(payload, SECRET, {expiresIn: 3600}, (err, token) =>{
-
+                jwt.sign(payload, process.env.SECRET, {expiresIn: 3600}, (err, token) =>{
                     if(err){
                         console.log(err);
                     }
-
                     return res.json({
-
-                        sucess: true,
-                        token: 'Bearer ${token}',
-                        profile: user
-
+                        token: `Bearer ${token}`
                     });
                 });
             } else {
                 return res.status(400).json({ password: "Password Incorrect"});
             }
-
         });
     });
 });
