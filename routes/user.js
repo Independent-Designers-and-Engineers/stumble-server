@@ -30,7 +30,7 @@ router.post("/login", (req, res) => {
                 const payload = {
                     user_name : user.phoneNumber
                 };
-                jwt.sign(payload, SECRET, {expiresIn: 3600}, (err, token) =>{
+                jwt.sign(payload, process.env.SECRET, {expiresIn: 3600}, (err, token) =>{
                     if(err){
                         console.log(err);
                     }
