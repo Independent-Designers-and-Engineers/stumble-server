@@ -88,5 +88,13 @@ router.get("/current", passport.authenticate("jwt", { session: false }), (req, r
     res.json(req.user);
 });
 
+// PATCH /user/
+router.patch('user/:id/profile',
+    passport.authenticate("jwt", { session: false }),
+    (req, res) =>
+    {
+        User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
+    });
+
 // Export this so it can be used outside
 module.exports = router;
