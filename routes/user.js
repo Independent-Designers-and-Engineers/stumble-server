@@ -88,7 +88,7 @@ router.get("/current", passport.authenticate("jwt", { session: false }), (req, r
     res.json(req.user);
 });
 
-// PATCH /user/
+// PATCH /user/:id/profile
 router.patch('user/:id/profile',
     passport.authenticate("jwt", { session: false }),
     (req, res) =>
