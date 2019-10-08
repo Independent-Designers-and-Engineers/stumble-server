@@ -89,13 +89,11 @@ router.get("/current", passport.authenticate("jwt", { session: false }), (req, r
 });
 
 // GET /user/{id}/profile
-router.get("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
+router.get("/:id/profile", passport.authenticate("jwt", { session: false }), {password: 0}, {phoneNumber: 0}, (req, res) => {
     const phoneNumber = req.params["id"];
     User.findOne({ phoneNumber: phoneNumber }, (err, user) => {
         if (user) {
             let foundUser = user;
-            delete foundUser.password;
-            delete foundUser.phoneNumber;
             res.status(200).send(foundUser);
         }
         else {
