@@ -88,13 +88,24 @@ router.get("/current", passport.authenticate("jwt", { session: false }), (req, r
     res.json(req.user);
 });
 
-// PATCH /user/:id/profile
-router.patch('user/:id/profile',
-    passport.authenticate("jwt", { session: false }),
-    (req, res) =>
-    {
-        User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
+// GET /user/{id}/profile
+router.get("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
+    const phoneNumber = req.params["id"];
+    User.findOne({ phoneNumber: phoneNumber }, { password: 0, phoneNumber: 0 }, (err, user) => {
+        if (user) {
+            let foundUser = user;
+            res.status(200).send(foundUser);
+        }
+        else {
+            res.status(404).send({ message: "User doesn't exist"});
+        }
     });
+});
+
+// PATCH /user/:id/profile
+router.patch('user/:id/profile', passport.authenticate("jwt", { session: false }), (req, res) => {
+    User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
+});
 
 // Export this so it can be used outside
 module.exports = router;
