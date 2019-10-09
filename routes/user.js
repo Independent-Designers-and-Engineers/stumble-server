@@ -6,6 +6,7 @@ const passport = require("passport");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const validateLoginInput = require("../models/login");
+const validateCreateInput = require("../validation/createAccount");
 const SECRET = process.env.SECRET;
 
 // Create a new Express router for "/user" route
@@ -63,10 +64,10 @@ router.post("/login", (req, res) => {
 // POST /user/create
 router.post("/create", (req, res) => {
     const body = req.body;
-    // If any of the fields are not there, send a 400 Bad Request response
-    if (!body.firstName || !body.lastName || !body.phoneNumber || !body.dateOfBirth || !body.password) {
-        res.status(400).json({ message: "One or more fields not present" });
-        return;
+    
+    const { errors, isValid } = validateCreateInput(body);
+    if (!isValid) {
+        return res.status(400).json(errors);
     }
     // If there is a document already in the database, send a 409 Conflict response
     User.findOne({ phoneNumber: body.phoneNumber }, (err, user) => {
