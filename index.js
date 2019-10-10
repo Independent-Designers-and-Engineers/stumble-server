@@ -3,6 +3,7 @@ const express = require("express");             // This is the main one, it'll h
 const bparser = require("body-parser");         // This one is used with Express so that it can read the request bodies sent to it
 const WebSocket = require("ws");
 const mongoose = require("mongoose");
+const passport = require("passport");
 
 // Import our own modules/files
 const UserRouter = require("./routes/user");    // This is the Express router for the "/user" route
@@ -22,6 +23,10 @@ const wss = new WebSocket.Server({ server: app });
 
 // Connect to the MongoDB server
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true });
+
+// Allow Passport as an Express middleware
+app.use(passport.initialize());
+require("./config/passport")(passport);
 
 // Set base routes to respective routers
 app.use("/user", UserRouter);   // Make "/user" the base route for the "/user" router
