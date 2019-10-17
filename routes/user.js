@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const passport = require("passport");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const validateLoginInput = require("../models/login");
+const validateLoginInput = require("../validation/login");
 const SECRET = process.env.SECRET;
 
 // Create a new Express router for "/user" route
@@ -27,7 +27,7 @@ router.post("/login", (req, res) => {
     User.findOne({ phoneNumber }).then((user) => {
 
         if(!user){
-            errors.phoneNumber = "User not found."
+            errors.phoneNumber = "User not found.";
             return res.status(404).json(errors);
         }
 
@@ -35,7 +35,7 @@ router.post("/login", (req, res) => {
 
             if(isMatch){
                 const payload = {
-                    user_name : user.phoneNumber
+                    phoneNumber : user.phoneNumber
                 };
 
                 jwt.sign(payload, SECRET, {expiresIn: 3600}, (err, token) =>{
