@@ -1,12 +1,12 @@
-const User = require("models/User");
+import { userInfo } from "os";
 
-function viewFriends() {
-    return UserSchema["friendList"]
-}
+router.put("/user/:id/friends/add", (req,res) => {
 
-// POST /user/create
-router.put("/:id/friends", async (req, res) => {
-    const body = req.body;
-    const phoneNumber = req.params(["id"])
-    const fetchedProfile = await User.findOne({phoneNumber: phoneNumber})
+    const id = req.params["id"];
+    const newFriend = req.body["friend"];
+
+    User.findOneAndUpdate({"friend": 480},
+        {"friendList": {"$addToSet":newFriend}},
+
+    )
 });
