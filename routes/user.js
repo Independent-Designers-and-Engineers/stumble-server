@@ -13,9 +13,6 @@ const router = Router();
 
 // POST /user
 router.post("/login", (req, res) => {
-    // TODO: Implement this (#5)
-    // If we get a POST request for "/user", just get the firstname and send it back
-
     const {errors, isValid} = validateLoginInput(req.body);
 
     if (!isValid) {
@@ -23,39 +20,27 @@ router.post("/login", (req, res) => {
     } 
 
     const { phoneNumber, password } = req.body;
-
     User.findOne({ phoneNumber }).then((user) => {
-
         if(!user){
             errors.phoneNumber = "User not found.";
             return res.status(404).json(errors);
         }
-
         bcrypt.compare(password, user.password).then( isMatch => {
-
             if(isMatch){
                 const payload = {
                     phoneNumber : user.phoneNumber
                 };
-
-                jwt.sign(payload, SECRET, {expiresIn: 3600}, (err, token) =>{
-
+                jwt.sign(payload, process.env.SECRET, {expiresIn: 3600}, (err, token) =>{
                     if(err){
                         console.log(err);
                     }
-
                     return res.json({
-
-                        sucess: true,
-                        token: `Bearer ${token}`,
-                        profile: user
-
+                        token: `Bearer ${token}`
                     });
                 });
             } else {
                 return res.status(400).json({ password: "Password Incorrect"});
             }
-
         });
     });
 });
@@ -101,6 +86,25 @@ router.post("/create", (req, res) => {
 router.get("/current", passport.authenticate("jwt", { session: false }), (req, res) => {
     // TODO: Test this when login works
     res.json(req.user);
+});
+
+// GET /user/{id}/profile
+router.get("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
+    const phoneNumber = req.params["id"];
+    User.findOne({ phoneNumber: phoneNumber }, { password: 0, phoneNumber: 0 }, (err, user) => {
+        if (user) {
+            let foundUser = user;
+            res.status(200).send(foundUser);
+        }
+        else {
+            res.status(404).send({ message: "User doesn't exist"});
+        }
+    });
+});
+
+// PATCH /user/:id/profile
+router.patch('user/:id/profile', passport.authenticate("jwt", { session: false }), (req, res) => {
+    User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
 });
 
 // Export this so it can be used outside
