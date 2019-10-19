@@ -103,7 +103,7 @@ router.get("/:id/profile", passport.authenticate("jwt", { session: false }), (re
 });
 
 // PATCH /user/:id/profile
-router.patch('user/:id/profile', passport.authenticate("jwt", { session: false }), (req, res) => {
+router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
     User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
 });
 
