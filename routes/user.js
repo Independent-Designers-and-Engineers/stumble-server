@@ -107,5 +107,25 @@ router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (
     User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
 });
 
+router.post("/:id/friends", (req,res) => {
+
+    const id = req.params["id"];
+    const newFriend = req.body["friend"];
+    
+    User.findOneAndUpdate({"phoneNumber": id},
+        {$addToSet: {"friends": newFriend}},
+        (error, user) => {
+            
+            if (user) {
+                return res.status(200).send();
+            } else {
+                
+                return res.status(404).send();
+            }
+
+            
+        });
+});
+
 // Export this so it can be used outside
 module.exports = router;
