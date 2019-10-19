@@ -107,26 +107,24 @@ router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (
     User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
 });
 
-router.put("/:id/friends/add", (req,res) => {
-
-    console.log("here");
+router.post("/:id/friends", (req,res) => {
 
     const id = req.params["id"];
     const newFriend = req.body["friend"];
     
     User.findOneAndUpdate({"phoneNumber": id},
-        {$addToSet: {"friendList": newFriend}},
+        {$addToSet: {"friends": newFriend}},
         (error, user) => {
+            
             if (user) {
-                res.body["friendList"] = user["friendList"];
-                return res.status(200);
+                return res.status(200).send();
+            } else {
+                
+                return res.status(404).send();
             }
-            else {
-                return res.status(400);
-            }
-        });
 
-    console.log("done ");
+            
+        });
 });
 
 // Export this so it can be used outside
