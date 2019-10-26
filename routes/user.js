@@ -107,5 +107,34 @@ router.patch('user/:id/profile', passport.authenticate("jwt", { session: false }
     User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
 });
 
+//POST /user/{id}/interests
+router.post("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
+    const body = req.body;
+    const phoneNumber = req.params["id"];
+    if(!body.category || !body.values) { //If there is no category or value
+        res.status(400).send({ message: "One or more fields not present" });
+        return;
+    }
+    User.findOne({ phoneNumber: phoneNumber }, (err, user) => {
+        if(!user) {
+            res.status(404).send({ message: "User not found" });
+        }
+        else {
+            if(user.interests.length == 0) {
+                user.interests = [body];
+                user.save(err => { res.status(200).send() });
+            }
+            else {
+                User.findOneAndUpdate({ phoneNumber: phoneNumber },
+                    { $addToSet: { "interests.$[elem].values": body.values}}, {arrayFilters: [{"elem.category": body.category}]}, (err, user) => {
+                    res.status(200).send();
+                });
+            }
+        }
+    });
+});
+
+
+
 // Export this so it can be used outside
 module.exports = router;

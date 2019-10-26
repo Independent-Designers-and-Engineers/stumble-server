@@ -6,7 +6,8 @@ const UserSchema = new mongoose.Schema({
     name: String,
     phoneNumber: String,
     password: String,
-    dateOfBirth: Date
+    dateOfBirth: Date,
+    interests:[{category: String, values: [String]}]
 });
 
 // Export the model
