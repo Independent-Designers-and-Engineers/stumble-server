@@ -107,5 +107,20 @@ router.patch('user/:id/profile', passport.authenticate("jwt", { session: false }
     User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
 });
 
+//POST /user/:id/blocked
+router.post("/:id/blocked", (req, res) => {
+    const id = req.params["id"];
+    const blockedUser = req.body["blocked"];
+    
+    User.findOneAndUpdate({"phoneNumber" : id}, 
+        {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
+        if(user) {
+            return res.status(200).send();
+        }else {
+            return res.status(404).send();
+        }
+    });
+});
+
 // Export this so it can be used outside
 module.exports = router;
