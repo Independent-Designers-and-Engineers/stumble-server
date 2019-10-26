@@ -107,7 +107,19 @@ router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (
     User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
 });
 
-//POST /user/{id}/interests
+//POST /user/:id/blocked
+router.post("/:id/blocked", (req, res) => {
+    const id = req.params["id"];
+    const blockedUser = req.body["blocked"];
+    
+    User.findOneAndUpdate({"phoneNumber" : id}, 
+        {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
+        if(user) {
+            return res.status(200).send();
+        }else {
+            return res.status(404).send();
+
+// POST /user/{id}/interests
 router.post("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
     const body = req.body;
     const phoneNumber = req.params["id"];
@@ -134,24 +146,18 @@ router.post("/:id/interests", passport.authenticate("jwt", { session: false }), 
     });
 });
 
-
 router.post("/:id/friends", (req,res) => {
-
     const id = req.params["id"];
     const newFriend = req.body["friend"];
     
     User.findOneAndUpdate({"phoneNumber": id},
         {$addToSet: {"friends": newFriend}},
         (error, user) => {
-            
             if (user) {
                 return res.status(200).send();
-            } else {
-                
+            } else { 
                 return res.status(404).send();
             }
-
-            
         });
 });
 
