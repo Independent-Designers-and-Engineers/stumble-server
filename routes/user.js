@@ -28,7 +28,7 @@ router.post("/login", (req, res) => {
         bcrypt.compare(password, user.password).then( isMatch => {
             if(isMatch){
                 const payload = {
-                    user_name : user.phoneNumber
+                    phoneNumber : user.phoneNumber
                 };
                 jwt.sign(payload, process.env.SECRET, {expiresIn: 3600}, (err, token) =>{
                     if(err){
@@ -103,7 +103,7 @@ router.get("/:id/profile", passport.authenticate("jwt", { session: false }), (re
 });
 
 // PATCH /user/:id/profile
-router.patch('user/:id/profile', passport.authenticate("jwt", { session: false }), (req, res) => {
+router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
     User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
 });
 
@@ -118,8 +118,47 @@ router.post("/:id/blocked", (req, res) => {
             return res.status(200).send();
         }else {
             return res.status(404).send();
+
+// POST /user/{id}/interests
+router.post("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
+    const body = req.body;
+    const phoneNumber = req.params["id"];
+    if(!body.category || !body.values) { //If there is no category or value
+        res.status(400).send({ message: "One or more fields not present" });
+        return;
+    }
+    User.findOne({ phoneNumber: phoneNumber }, (err, user) => {
+        if(!user) {
+            res.status(404).send({ message: "User not found" });
+        }
+        else {
+            if(user.interests.length == 0) {
+                user.interests = [body];
+                user.save(err => { res.status(200).send() });
+            }
+            else {
+                User.findOneAndUpdate({ phoneNumber: phoneNumber },
+                    { $addToSet: { "interests.$[elem].values": body.values}}, {arrayFilters: [{"elem.category": body.category}]}, (err, user) => {
+                    res.status(200).send();
+                });
+            }
         }
     });
+});
+
+router.post("/:id/friends", (req,res) => {
+    const id = req.params["id"];
+    const newFriend = req.body["friend"];
+    
+    User.findOneAndUpdate({"phoneNumber": id},
+        {$addToSet: {"friends": newFriend}},
+        (error, user) => {
+            if (user) {
+                return res.status(200).send();
+            } else { 
+                return res.status(404).send();
+            }
+        });
 });
 
 // Export this so it can be used outside

@@ -8,8 +8,16 @@ const UserSchema = new mongoose.Schema({
     phoneNumber: String,
     password: String,
     dateOfBirth: Date,
+    interests: [{
+      category: String,
+      values: [String]
+    }],
     blocked: [{
         type: Schema.ObjectId,
+        ref: "User"
+    }],
+    friends: [{
+        type: Schema.ObjectId,    
         ref: "User"
     }]
 });
