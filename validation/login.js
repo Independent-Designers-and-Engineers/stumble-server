@@ -1,7 +1,7 @@
 const Validator = require("validator");
 const isEmpty = require("is-empty");
 
-module.exports = validateLoginInput = data =>{
+module.exports = function validateLoginInput(data){
     let errors = {};
 
     let { phoneNumber, password } = data;
@@ -10,23 +10,23 @@ module.exports = validateLoginInput = data =>{
     password = !isEmpty(password) ? password : "";
 
     if(Validator.isEmpty(phoneNumber)){
-        errors.phoneNumber = "Phone Number is required."
+        errors.phoneNumber = "Phone Number is required.";
     }
     else if(!Validator.isMobilePhone(phoneNumber)){
-        errors.phoneNumber = "Enter a valid Phone Number."
+        errors.phoneNumber = "Enter a valid Phone Number.";
     }
 
     if(Validator.isEmpty(password)){
-        errors.password = "Password is required."
+        errors.password = "Password is required.";
     }
     else if(!Validator.isLength(password, {min: 8})){
-        errors.password = "Password must be a minimum of 8 characters."
+        errors.password = "Password must be a minimum of 8 characters.";
     }
 
     return{
         errors,
         isValid: isEmpty(errors)
-    }
-}
+    };
+};
 
 
