@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema({
     phoneNumber: String,
     password: String,
     dateOfBirth: Date,
-    friendList: []
+    friends: []
 });
 
 // Export the model
