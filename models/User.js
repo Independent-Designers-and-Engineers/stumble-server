@@ -1,5 +1,6 @@
 // Imports
 const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
 // Define the User model with each field
 const UserSchema = new mongoose.Schema({
@@ -7,7 +8,18 @@ const UserSchema = new mongoose.Schema({
     phoneNumber: String,
     password: String,
     dateOfBirth: Date,
-    friends: []
+    interests: [{
+      category: String,
+      values: [String]
+    }],
+    blocked: [{
+        type: Schema.ObjectId,
+        ref: "User"
+    }],
+    friends: [{
+        type: Schema.ObjectId,    
+        ref: "User"
+    }]
 });
 
 // Export the model
