@@ -180,15 +180,15 @@ router.post("/:id/friends", (req,res) => {
 
 
 //delete
-router.post("/:id/friends", (req,res) => { //test post
+router.delete("/:id/friends", (req,res) => {
 
     const id = req.params["id"];
     const newFriend = req.body["friend"];
     
-    User.remove({"phoneNumber": id}, //test remove
+    User.findOneAndDelete({"phoneNumber": id}, //test findOneandDelete
     { $pull: { "friends": newFriend} },
     (error, user) => {
-        console.log("user");
+        console.log(user);
         if (user) { 
             return res.status(200).send();
         } else {
