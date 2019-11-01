@@ -25,6 +25,4 @@ module.exports = validateLoginInput = data => {
         errors,
         isValid: isEmpty(errors)
     };
-}
-
-
+};
