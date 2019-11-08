@@ -118,6 +118,18 @@ router.post("/:id/blocked", (req, res) => {
         if (user) {
             return res.status(200).send();
         } else {
+            return res.status(404).send({ message: "Interests not found"});
+        }
+    });
+});
+
+// GET /user/{id}/interests
+router.get("/:id/interests", (req, res) => {
+    const phoneNumber = req.params["id"]
+    User.findOne({ "phoneNumber": phoneNumber }, { "interests": 1 }, (error, user) => {
+        if (user) {
+            return res.status(200).send(user);
+        } else {
             return res.status(404).send();
         }
     });
