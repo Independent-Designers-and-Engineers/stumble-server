@@ -112,6 +112,11 @@ router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (
 router.post("/:id/blocked", (req, res) => {
     const id = req.params["id"];
     const blockedUser = req.body["blocked"];
+
+    const { errors, isValid } = validateBlockedListInput(body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
     
     User.findOneAndUpdate({"phoneNumber" : id}, 
         {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
@@ -127,10 +132,12 @@ router.post("/:id/blocked", (req, res) => {
 router.post("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
     const body = req.body;
     const phoneNumber = req.params["id"];
-    if(!body.category || !body.values) { //If there is no category or value
-        res.status(400).send({ message: "One or more fields not present" });
-        return;
+
+    const { errors, isValid } = validateInterestsListInput(body);
+    if(isValid) {
+        return res.status(400).json(errors);
     }
+
     User.findOne({ phoneNumber: phoneNumber }, (err, user) => {
         if(!user) {
             res.status(404).send({ message: "User not found" });
@@ -166,6 +173,11 @@ router.get("/:id/friends", (req, res) => {
 router.post("/:id/friends", (req,res) => {
     const id = req.params["id"];
     const newFriend = req.body["friend"];
+
+    const { errors, isValid } = validateFriendsListInput(body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
     
     User.findOneAndUpdate({"phoneNumber": id},
         {$addToSet: {"friends": newFriend}},
