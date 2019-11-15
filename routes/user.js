@@ -118,7 +118,7 @@ router.post("/:id/blocked", (req, res) => {
         if (user) {
             return res.status(200).send();
         } else {
-            return res.status(404).send({ message: "Interests not found"});
+            return res.status(404).send({ message: "User not found"});
         }
     });
 });
@@ -130,7 +130,7 @@ router.get("/:id/interests", (req, res) => {
         if (user) {
             return res.status(200).send(user);
         } else {
-            return res.status(404).send();
+            return res.status(404).send({ message: "User not found"});
         }
     });
 });
