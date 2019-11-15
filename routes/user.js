@@ -118,7 +118,7 @@ router.post("/:id/blocked", (req, res) => {
         if (user) {
             return res.status(200).send();
         } else {
-            return res.status(404).send({ message: "User not found"});
+            return res.status(404).send({ message: "User not found" });
         }
     });
 });
@@ -130,7 +130,7 @@ router.get("/:id/interests", (req, res) => {
         if (user) {
             return res.status(200).send(user);
         } else {
-            return res.status(404).send({ message: "User not found"});
+            return res.status(404).send({ message: "User not found" });
         }
     });
 });
@@ -155,8 +155,8 @@ router.post("/:id/interests", passport.authenticate("jwt", { session: false }), 
             else {
                 User.findOneAndUpdate({ phoneNumber: phoneNumber },
                     { $addToSet: { "interests.$[elem].values": body.values}}, {arrayFilters: [{"elem.category": body.category}]}, (err, user) => {
-                    res.status(200).send();
-                });
+                        res.status(200).send();
+                    });
             }
         }
     });
@@ -179,15 +179,23 @@ router.post("/:id/friends", (req,res) => {
     const id = req.params["id"];
     const newFriend = req.body["friend"];
     
-    User.findOneAndUpdate({"phoneNumber": id},
-        {$addToSet: {"friends": newFriend}},
-        (error, user) => {
-            if (user) {
-                return res.status(200).send();
-            } else { 
-                return res.status(404).send();
-            }
-        });
+    User.findOneAndUpdate({"phoneNumber": id}, {$addToSet: {"friends": newFriend}}, (error, user) => {
+        if (user) {
+            User.findByIdAndUpdate(newFriend, {$addToSet: {"friends": user.id}}, (error, friend) => {    
+                if (friend) {
+                    return res.status(200).send();
+                } else { 
+                    return res.status(404).send();
+                }
+            });
+            return res.status(200).send();
+        } else {    
+            return res.status(404).send();
+        }
+    });
+
+
+    
 });
 
 // Export this so it can be used outside
