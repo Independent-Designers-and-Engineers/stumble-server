@@ -7,6 +7,9 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const validateCreateInput = require("../validation/createAccount");
 const validateLoginInput = require("../validation/login");
+const validateFriendsListInput = require("../validation/friendsList");
+const validateInterestsListInput = require("../validation/interestsList");
+const validateBlockedListInput = require("../validation/blockedList");
 const SECRET = process.env.SECRET;
 
 // Create a new Express router for "/user" route
@@ -114,17 +117,6 @@ router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (
     });
 });
 
-// GET /user/:id/blocked
-router.get("/:id/blocked", passport.authenticate("jwt", { session: false }), (req, res) => {
-    User.findById(req.params["id"], { "blocked": 1 }, (error, user) => {
-        if (user) {
-            res.status(200).send(user);
-        } else {
-            res.status(404).send({ message: "User doesn't exist" });
-        }
-    });
-});
-
 // GET /user/{id}/interests
 router.get("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
     User.findById(req.params["id"], { "interests": 1 }, (error, user) => {
@@ -139,10 +131,11 @@ router.get("/:id/interests", passport.authenticate("jwt", { session: false }), (
 // POST /user/:id/interests
 router.post("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
     const body = req.body;
-    if(!body.category || !body.values) { //If there is no category or value
-        res.status(400).send({ message: "One or more fields not present" });
-        return;
+    const { errors, isValid } = validateInterestsListInput(req.body);
+    if(!isValid) {
+        return res.status(400).json(errors);
     }
+
     User.findById(req.params["id"], (err, user) => {
         if(!user) {
             res.status(404).send({ message: "User not found" });
@@ -174,6 +167,10 @@ router.get("/:id/friends", passport.authenticate("jwt", { session: false }), (re
 
 // POST /user/:id/friends
 router.post("/:id/friends", passport.authenticate("jwt", { session: false }), (req,res) => {
+    const { errors, isValid } = validateFriendsListInput(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
     const newFriend = req.body["friend"];
     User.findByIdAndUpdate(req.params["id"], {$addToSet: {"friends": newFriend}}, (error, user) => {
         if (user) {
@@ -190,9 +187,24 @@ router.post("/:id/friends", passport.authenticate("jwt", { session: false }), (r
     });    
 });
 
+// GET /user/:id/blocked
+router.get("/:id/blocked", passport.authenticate("jwt", { session: false }), (req, res) => {
+    User.findById(req.params["id"], { "blocked": 1 }, (error, user) => {
+        if (user) {
+            res.status(200).send(user);
+        } else {
+            res.status(404).send({ message: "User doesn't exist" });
+        }
+    });
+});
+
 // POST /user/:id/blocked
-router.post("/:id/blocked", (req, res) => {
+router.post("/:id/blocked", passport.authenticate("jwt", { session: false }), (req, res) => {
     const blockedUser = req.body["blocked"];
+    const { errors, isValid } = validateBlockedListInput(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
     User.findByIdAndUpdate(req.params["id"], {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
         if (user) {
             User.findByIdAndUpdate(blockedUser, {$addToSet: {"blocked": user.id}}, (error, block) => {    
@@ -209,8 +221,12 @@ router.post("/:id/blocked", (req, res) => {
 });
 
 // DELETE /user/:id/blocked
-router.delete("/:id/blocked", (req, res) => {
-    const blockedUser = req.body["unblock"];
+router.delete("/:id/blocked", passport.authenticate("jwt", { session: false }), (req, res) => {
+    const blockedUser = req.body["blocked"];
+    const { errors, isValid } = validateBlockedListInput(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
     User.findByIdAndUpdate(req.params["id"], {$pull: {"blocked": blockedUser}}, (error, user) => {
         if (user) {
             User.findByIdAndUpdate(blockedUser, {$pull: {"blocked": user.id}}, (error, block) => {    
