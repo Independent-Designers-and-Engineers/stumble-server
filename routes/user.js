@@ -115,12 +115,24 @@ router.post("/:id/blocked", (req, res) => {
     
     User.findOneAndUpdate({"phoneNumber" : id}, 
         {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
-            if (user) {
-                return res.status(200).send();
-            } else {
-                return res.status(404).send();
-            }
-        });
+        if (user) {
+            return res.status(200).send();
+        } else {
+            return res.status(404).send({ message: "User not found" });
+        }
+    });
+});
+
+// GET /user/{id}/interests
+router.get("/:id/interests", (req, res) => {
+    const phoneNumber = req.params["id"]
+    User.findOne({ "phoneNumber": phoneNumber }, { "interests": 1 }, (error, user) => {
+        if (user) {
+            return res.status(200).send(user);
+        } else {
+            return res.status(404).send({ message: "User not found" });
+        }
+    });
 });
 
 // POST /user/{id}/interests
