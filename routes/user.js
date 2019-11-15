@@ -108,21 +108,6 @@ router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (
     User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
 });
 
-// POST /user/:id/blocked
-router.post("/:id/blocked", (req, res) => {
-    const id = req.params["id"];
-    const blockedUser = req.body["blocked"];
-    
-    User.findOneAndUpdate({"phoneNumber" : id}, 
-        {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
-            if (user) {
-                return res.status(200).send();
-            } else {
-                return res.status(404).send();
-            }
-        });
-});
-
 // POST /user/{id}/interests
 router.post("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
     const body = req.body;
@@ -152,7 +137,7 @@ router.post("/:id/interests", passport.authenticate("jwt", { session: false }), 
 
 //GET /user/:id/friends
 router.get("/:id/friends", (req, res) => {
-    const phoneNumber = req.params["id"]
+    const phoneNumber = req.params["id"];
     User.findOne({ "phoneNumber": phoneNumber }, { "friends": 1 }, (error, user) => {
         if (user) {
             return res.status(200).send(user);
@@ -176,14 +161,56 @@ router.post("/:id/friends", (req,res) => {
                     return res.status(404).send();
                 }
             });
-            return res.status(200).send();
         } else {    
             return res.status(404).send();
         }
     });
+    
+});
 
+// POST /user/:id/blocked
+router.post("/:id/blocked", (req, res) => {
+    const id = req.params["id"];
+    const blockedUser = req.body["blocked"];
+    
+    User.findByIdAndUpdate(id, {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
+        if (user) {
+            User.findByIdAndUpdate(blockedUser, {$addToSet: {"blocked": user.id}}, (error, block) => {    
+                if (block) {
+                    return res.status(200).send();
+                } else { 
+                    return res.status(404).send();
+                }
+            });
+        } else {
+            return res.status(404).send();
+        }
+    });
 
     
+});
+
+// DELETE /user/:id/blocked
+router.delete("/:id/blocked", (req, res) => {
+
+    const id = req.params["id"];
+    const blockedUser = req.body["unblock"];
+
+    User.findByIdAndUpdate(id, {$pull: {"blocked": blockedUser}}, (error, user) => {
+        if (user) {
+            User.findByIdAndUpdate(blockedUser, {$pull: {"blocked": user.id}}, (error, block) => {    
+                if (block) {
+                    return res.status(200).send();
+                } else { 
+                    return res.status(404).send();
+                }
+            });
+        } else {    
+            return res.status(404).send();
+        }
+    });    
+
+
 });
 
 // Export this so it can be used outside
