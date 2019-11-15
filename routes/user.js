@@ -105,7 +105,20 @@ router.get("/:id/profile", passport.authenticate("jwt", { session: false }), (re
 
 // PATCH /user/:id/profile
 router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
-    User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
+    User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, req.body, {new: true});
+    res.status(200).send();
+});
+
+// GET /user/:id/blocked
+router.get("/:id/blocked", (req, res) => {
+    const id = req.params["id"];
+    User.findById(id, { "blocked": 1 }, (error, user) => {
+        if (user) {
+            res.status(200).send(user);
+        } else {
+            res.status(404).send({ message: "User doesn't exist" });
+        }
+    });
 });
 
 // POST /user/:id/blocked
@@ -115,17 +128,17 @@ router.post("/:id/blocked", (req, res) => {
     
     User.findOneAndUpdate({"phoneNumber" : id}, 
         {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
-        if (user) {
-            return res.status(200).send();
-        } else {
-            return res.status(404).send({ message: "User not found" });
-        }
-    });
+            if (user) {
+                return res.status(200).send();
+            } else {
+                return res.status(404).send({ message: "User not found" });
+            }
+        });
 });
 
 // GET /user/{id}/interests
 router.get("/:id/interests", (req, res) => {
-    const phoneNumber = req.params["id"]
+    const phoneNumber = req.params["id"];
     User.findOne({ "phoneNumber": phoneNumber }, { "interests": 1 }, (error, user) => {
         if (user) {
             return res.status(200).send(user);
@@ -150,7 +163,7 @@ router.post("/:id/interests", passport.authenticate("jwt", { session: false }), 
         else {
             if(user.interests.length == 0) {
                 user.interests = [body];
-                user.save(err => { res.status(200).send() });
+                user.save(err => { res.status(200).send(); });
             }
             else {
                 User.findOneAndUpdate({ phoneNumber: phoneNumber },
@@ -164,7 +177,7 @@ router.post("/:id/interests", passport.authenticate("jwt", { session: false }), 
 
 //GET /user/:id/friends
 router.get("/:id/friends", (req, res) => {
-    const phoneNumber = req.params["id"]
+    const phoneNumber = req.params["id"];
     User.findOne({ "phoneNumber": phoneNumber }, { "friends": 1 }, (error, user) => {
         if (user) {
             return res.status(200).send(user);
