@@ -110,7 +110,7 @@ router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (
 });
 
 // GET /user/:id/blocked
-router.get("/:id/blocked", (req, res) => {
+router.get("/:id/blocked", passport.authenticate("jwt", { session: false }), (req, res) => {
     const id = req.params["id"];
     User.findById(id, { "blocked": 1 }, (error, user) => {
         if (user) {
@@ -122,7 +122,7 @@ router.get("/:id/blocked", (req, res) => {
 });
 
 // POST /user/:id/blocked
-router.post("/:id/blocked", (req, res) => {
+router.post("/:id/blocked", passport.authenticate("jwt", { session: false }), (req, res) => {
     const id = req.params["id"];
     const blockedUser = req.body["blocked"];
     
@@ -137,7 +137,7 @@ router.post("/:id/blocked", (req, res) => {
 });
 
 // GET /user/{id}/interests
-router.get("/:id/interests", (req, res) => {
+router.get("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
     const phoneNumber = req.params["id"];
     User.findOne({ "phoneNumber": phoneNumber }, { "interests": 1 }, (error, user) => {
         if (user) {
@@ -176,7 +176,7 @@ router.post("/:id/interests", passport.authenticate("jwt", { session: false }), 
 });
 
 //GET /user/:id/friends
-router.get("/:id/friends", (req, res) => {
+router.get("/:id/friends", passport.authenticate("jwt", { session: false }), (req, res) => {
     const phoneNumber = req.params["id"];
     User.findOne({ "phoneNumber": phoneNumber }, { "friends": 1 }, (error, user) => {
         if (user) {
@@ -188,7 +188,7 @@ router.get("/:id/friends", (req, res) => {
 });
 
 // POST /user/:id/friends
-router.post("/:id/friends", (req,res) => {
+router.post("/:id/friends", passport.authenticate("jwt", { session: false }), (req,res) => {
     const id = req.params["id"];
     const newFriend = req.body["friend"];
     
