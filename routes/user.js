@@ -125,21 +125,6 @@ router.get("/:id/blocked", passport.authenticate("jwt", { session: false }), (re
     });
 });
 
-// POST /user/:id/blocked
-router.post("/:id/blocked", passport.authenticate("jwt", { session: false }), (req, res) => {
-    const id = req.params["id"];
-    const blockedUser = req.body["blocked"];
-    
-    User.findByIdAndUpdate(id, 
-        {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
-            if (user) {
-                return res.status(200).send();
-            } else {
-                return res.status(404).send({ message: "User not found" });
-            }
-        });
-});
-
 // GET /user/{id}/interests
 router.get("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
     User.findById(req.params["id"], { "interests": 1 }, (error, user) => {
@@ -199,11 +184,46 @@ router.post("/:id/friends", passport.authenticate("jwt", { session: false }), (r
                     return res.status(404).send();
                 }
             });
-            return res.status(200).send();
         } else {    
             return res.status(404).send();
         }
     });    
+});
+
+// POST /user/:id/blocked
+router.post("/:id/blocked", (req, res) => {
+    const blockedUser = req.body["blocked"];
+    User.findByIdAndUpdate(req.params["id"], {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
+        if (user) {
+            User.findByIdAndUpdate(blockedUser, {$addToSet: {"blocked": user.id}}, (error, block) => {    
+                if (block) {
+                    return res.status(200).send();
+                } else { 
+                    return res.status(404).send();
+                }
+            });
+        } else {
+            return res.status(404).send();
+        }
+    });
+});
+
+// DELETE /user/:id/blocked
+router.delete("/:id/blocked", (req, res) => {
+    const blockedUser = req.body["unblock"];
+    User.findByIdAndUpdate(req.params["id"], {$pull: {"blocked": blockedUser}}, (error, user) => {
+        if (user) {
+            User.findByIdAndUpdate(blockedUser, {$pull: {"blocked": user.id}}, (error, block) => {    
+                if (block) {
+                    return res.status(200).send();
+                } else { 
+                    return res.status(404).send();
+                }
+            });
+        } else {    
+            return res.status(404).send();
+        }
+    });
 });
 
 // Export this so it can be used outside
