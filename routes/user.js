@@ -7,6 +7,9 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const validateCreateInput = require("../validation/createAccount");
 const validateLoginInput = require("../validation/login");
+const validateFriendsListInput = require("../validation/friendsList");
+const validateInterestsListInput = require("../validation/interestsList");
+const validateBlockedListInput = require("../validation/blockedList");
 const SECRET = process.env.SECRET;
 
 // Create a new Express router for "/user" route
@@ -113,7 +116,7 @@ router.post("/:id/blocked", (req, res) => {
     const id = req.params["id"];
     const blockedUser = req.body["blocked"];
 
-    const { errors, isValid } = validateBlockedListInput(body);
+    const { errors, isValid } = validateBlockedListInput(req.body);
     if (!isValid) {
         return res.status(400).json(errors);
     }
@@ -133,8 +136,8 @@ router.post("/:id/interests", passport.authenticate("jwt", { session: false }), 
     const body = req.body;
     const phoneNumber = req.params["id"];
 
-    const { errors, isValid } = validateInterestsListInput(body);
-    if(isValid) {
+    const { errors, isValid } = validateInterestsListInput(req.body);
+    if(!isValid) {
         return res.status(400).json(errors);
     }
 
@@ -170,11 +173,11 @@ router.get("/:id/friends", (req, res) => {
 });
 
 // POST /user/:id/friends
-router.post("/:id/friends", (req,res) => {
+router.post("/:id/friends", passport.authenticate("jwt", { session: false }), (req,res) => {
     const id = req.params["id"];
     const newFriend = req.body["friend"];
 
-    const { errors, isValid } = validateFriendsListInput(body);
+    const { errors, isValid } = validateFriendsListInput(req.body);
     if (!isValid) {
         return res.status(400).json(errors);
     }
