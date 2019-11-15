@@ -75,7 +75,7 @@ router.post("/create", (req, res) => {
                     }
                     user.password = hash;
                     user.save()
-                        .then(user => res.status(201).json(user))
+                        .then(() => res.status(201).json())
                         .catch(console.err);
                 });
             });
@@ -92,7 +92,7 @@ router.get("/current", passport.authenticate("jwt", { session: false }), (req, r
 // GET /user/{id}/profile
 router.get("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
     const id = req.params["id"];
-    User.findOne({ phoneNumber: id }, { password: 0, phoneNumber: 0 }, (err, user) => {
+    User.findById(id, { password: 0, phoneNumber: 0 }, (err, user) => {
         if (user) {
             let foundUser = user;
             res.status(200).send(foundUser);
@@ -105,14 +105,18 @@ router.get("/:id/profile", passport.authenticate("jwt", { session: false }), (re
 
 // PATCH /user/:id/profile
 router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
-    User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, req.body, {new: true});
-    res.status(200).send();
+    User.findByIdAndUpdate(req.params["id"], req.body, {new: true}, (error, user) => {
+        if (user) {
+            res.status(200).send();
+        } else {
+            res.status(404).send({ message: "User doesn't exist" });
+        }
+    });
 });
 
 // GET /user/:id/blocked
 router.get("/:id/blocked", passport.authenticate("jwt", { session: false }), (req, res) => {
-    const id = req.params["id"];
-    User.findById(id, { "blocked": 1 }, (error, user) => {
+    User.findById(req.params["id"], { "blocked": 1 }, (error, user) => {
         if (user) {
             res.status(200).send(user);
         } else {
@@ -126,7 +130,7 @@ router.post("/:id/blocked", passport.authenticate("jwt", { session: false }), (r
     const id = req.params["id"];
     const blockedUser = req.body["blocked"];
     
-    User.findOneAndUpdate({"phoneNumber" : id}, 
+    User.findByIdAndUpdate(id, 
         {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
             if (user) {
                 return res.status(200).send();
@@ -138,8 +142,7 @@ router.post("/:id/blocked", passport.authenticate("jwt", { session: false }), (r
 
 // GET /user/{id}/interests
 router.get("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
-    const phoneNumber = req.params["id"];
-    User.findOne({ "phoneNumber": phoneNumber }, { "interests": 1 }, (error, user) => {
+    User.findById(req.params["id"], { "interests": 1 }, (error, user) => {
         if (user) {
             return res.status(200).send(user);
         } else {
@@ -148,26 +151,24 @@ router.get("/:id/interests", passport.authenticate("jwt", { session: false }), (
     });
 });
 
-// POST /user/{id}/interests
+// POST /user/:id/interests
 router.post("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
     const body = req.body;
-    const phoneNumber = req.params["id"];
     if(!body.category || !body.values) { //If there is no category or value
         res.status(400).send({ message: "One or more fields not present" });
         return;
     }
-    User.findOne({ phoneNumber: phoneNumber }, (err, user) => {
+    User.findById(req.params["id"], (err, user) => {
         if(!user) {
             res.status(404).send({ message: "User not found" });
         }
         else {
-            if(user.interests.length == 0) {
+            if (user.interests.length == 0) {
                 user.interests = [body];
-                user.save(err => { res.status(200).send(); });
-            }
-            else {
-                User.findOneAndUpdate({ phoneNumber: phoneNumber },
-                    { $addToSet: { "interests.$[elem].values": body.values}}, {arrayFilters: [{"elem.category": body.category}]}, (err, user) => {
+                user.save(() => { res.status(200).send(); });
+            } else {
+                User.findById(req.params["id"],
+                    { $addToSet: { "interests.$[elem].values": body.values} }, { arrayFilters: [{"elem.category": body.category}] }, () => {
                         res.status(200).send();
                     });
             }
@@ -177,8 +178,7 @@ router.post("/:id/interests", passport.authenticate("jwt", { session: false }), 
 
 //GET /user/:id/friends
 router.get("/:id/friends", passport.authenticate("jwt", { session: false }), (req, res) => {
-    const phoneNumber = req.params["id"];
-    User.findOne({ "phoneNumber": phoneNumber }, { "friends": 1 }, (error, user) => {
+    User.findById(req.params["id"], { "friends": 1 }, (error, user) => {
         if (user) {
             return res.status(200).send(user);
         } else {
@@ -189,10 +189,8 @@ router.get("/:id/friends", passport.authenticate("jwt", { session: false }), (re
 
 // POST /user/:id/friends
 router.post("/:id/friends", passport.authenticate("jwt", { session: false }), (req,res) => {
-    const id = req.params["id"];
     const newFriend = req.body["friend"];
-    
-    User.findOneAndUpdate({"phoneNumber": id}, {$addToSet: {"friends": newFriend}}, (error, user) => {
+    User.findByIdAndUpdate(req.params["id"], {$addToSet: {"friends": newFriend}}, (error, user) => {
         if (user) {
             User.findByIdAndUpdate(newFriend, {$addToSet: {"friends": user.id}}, (error, friend) => {    
                 if (friend) {
@@ -205,10 +203,7 @@ router.post("/:id/friends", passport.authenticate("jwt", { session: false }), (r
         } else {    
             return res.status(404).send();
         }
-    });
-
-
-    
+    });    
 });
 
 // Export this so it can be used outside
