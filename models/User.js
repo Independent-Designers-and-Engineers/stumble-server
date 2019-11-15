@@ -9,8 +9,8 @@ const UserSchema = new mongoose.Schema({
     password: String,
     dateOfBirth: Date,
     interests: [{
-      category: String,
-      values: [String]
+        category: String,
+        values: [String]
     }],
     blocked: [{
         type: Schema.ObjectId,
