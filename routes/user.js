@@ -185,7 +185,7 @@ router.post("/:id/friends", (req,res) => {
     const newFriend = req.body["friend"];
     
     User.findOneAndUpdate({"phoneNumber": id},
-        {$pull: {"friends": newFriend}},
+        {$addToSet: {"friends": newFriend}},
         (error, user) => {
             if (user) {
                 return res.status(200).send();
