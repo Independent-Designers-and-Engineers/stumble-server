@@ -180,24 +180,19 @@ router.post("/:id/friends", (req,res) => {
 
 
 //delete
-router.delete("/:id/friends", (req,res) => {
-
+router.post("/:id/friends", (req,res) => {
     const id = req.params["id"];
     const newFriend = req.body["friend"];
     
-    User.findOneAndDelete({"phoneNumber": id}, //test findOneandDelete
-    { $pull: { "friends": newFriend} },
-    (error, user) => {
-        console.log(user);
-        if (user) { 
-            return res.status(200).send();
-        } else {
-            
-            return res.status(404).send();
-        }
-
-    });
+    User.findOneAndUpdate({"phoneNumber": id},
+        {$pull: {"friends": newFriend}},
+        (error, user) => {
+            if (user) {
+                return res.status(200).send();
+            } else { 
+                return res.status(404).send();
+            }
+        });
 });
-
 // Export this so it can be used outside
 module.exports = router;
