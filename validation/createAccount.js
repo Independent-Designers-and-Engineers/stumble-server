@@ -11,7 +11,7 @@ module.exports = validateCreateInput = data => {
     password = !isEmpty(password) ? password : "";
     dateOfBirth = !isEmpty(dateOfBirth) ? dateOfBirth : "";
 
-    if(Validator.isEmpty(phoneNumber)){
+    if (Validator.isEmpty(phoneNumber)) {
         errors.phoneNumber = "Phone Number is required.";
     } else if (!Validator.isMobilePhone(phoneNumber)) {
         errors.phoneNumber = "Enter a valid Phone Number.";
@@ -19,7 +19,7 @@ module.exports = validateCreateInput = data => {
 
     if (Validator.isEmpty(password)) {
         errors.password = "Password is required.";
-    } else if (!Validator.isLength(password, {min: 8})) {
+    } else if (!Validator.isLength(password, { min: 8 })) {
         errors.password = "Password must be a minimum of 8 characters.";
     }
 
@@ -31,7 +31,7 @@ module.exports = validateCreateInput = data => {
     }
 
     if (Validator.isEmpty(dateOfBirth)) {
-        errors.dateOfBirth = "Password is required.";
+        errors.dateOfBirth = "Date of birth is required.";
     } else if (!Validator.toDate(dateOfBirth)) {
         errors.dateOfBirth = "Date of birth must be a valid date.";
     }

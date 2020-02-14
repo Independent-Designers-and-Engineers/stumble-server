@@ -32,7 +32,7 @@ router.post("/login", (req, res) => {
         bcrypt.compare(password, user.password).then(isMatch => {
             if (isMatch) {
                 const payload = {
-                    phoneNumber : user.phoneNumber
+                    phoneNumber: user.phoneNumber
                 };
                 jwt.sign(payload, process.env.SECRET, { expiresIn: 3600 }, (err, token) => {
                     if (err) {
@@ -52,7 +52,7 @@ router.post("/login", (req, res) => {
 // POST /user/create
 router.post("/create", (req, res) => {
     const body = req.body;
-    
+
     const { errors, isValid } = validateCreateInput(body);
     if (!isValid) {
         return res.status(400).json(errors);
@@ -108,7 +108,7 @@ router.get("/:id/profile", passport.authenticate("jwt", { session: false }), (re
 
 // PATCH /user/:id/profile
 router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
-    User.findByIdAndUpdate(req.params["id"], req.body, {new: true}, (error, user) => {
+    User.findByIdAndUpdate(req.params["id"], req.body, { new: true }, (error, user) => {
         if (user) {
             res.status(200).send();
         } else {
@@ -132,12 +132,12 @@ router.get("/:id/interests", passport.authenticate("jwt", { session: false }), (
 router.post("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
     const body = req.body;
     const { errors, isValid } = validateInterestsListInput(req.body);
-    if(!isValid) {
+    if (!isValid) {
         return res.status(400).json(errors);
     }
 
     User.findById(req.params["id"], (err, user) => {
-        if(!user) {
+        if (!user) {
             res.status(404).send({ message: "User not found" });
         }
         else {
@@ -146,7 +146,7 @@ router.post("/:id/interests", passport.authenticate("jwt", { session: false }), 
                 user.save(() => { res.status(200).send(); });
             } else {
                 User.findById(req.params["id"],
-                    { $addToSet: { "interests.$[elem].values": body.values} }, { arrayFilters: [{"elem.category": body.category}] }, () => {
+                    { $addToSet: { "interests.$[elem].values": body.values } }, { arrayFilters: [{ "elem.category": body.category }] }, () => {
                         res.status(200).send();
                     });
             }
@@ -166,25 +166,92 @@ router.get("/:id/friends", passport.authenticate("jwt", { session: false }), (re
 });
 
 // POST /user/:id/friends
-router.post("/:id/friends", passport.authenticate("jwt", { session: false }), (req,res) => {
+router.post("/:id/friends", passport.authenticate("jwt", { session: false }), (req, res) => {
     const { errors, isValid } = validateFriendsListInput(req.body);
     if (!isValid) {
         return res.status(400).json(errors);
     }
     const newFriend = req.body["friend"];
-    User.findByIdAndUpdate(req.params["id"], {$addToSet: {"friends": newFriend}}, (error, user) => {
+
+    User.findById(newFriend, { "blocked.oid": req.params["id"] }, (error, user) => {
+
+        if (!error) {
+
+            console.log("here2");
+
+            User.findById(req.params["id"], { "blocked.oid": newFriend }, (error, inBlocked) => {
+
+                if (!error) {
+
+                    console.log("here1");
+
+                    User.findById(newFriend, { "pending.oid": req.params["id"] }, (error, user) => {
+
+                        console.log("here");
+
+                        if (user) {
+
+                            console.log("frienship");
+
+                            User.findByIdAndUpdate(req.param["id"], { $addToSet: { "friends": newFriend } }, (error, user) => {
+
+                                User.findByIdAndUpdate(newFriend, { $addToSet: { "friends": req.params["id"] } }, (error, user) => {
+
+                                    return res.status(200).send();
+                                });
+                            });
+
+
+                        }
+                        else {
+
+                            User.findByIdAndUpdate(newFriend, { $addToSet: { "pending": req.params["id"] } }, (error, user) => {
+
+                                console.log("added to pending");
+                                return res.status(200).send();
+                            });
+
+                        }
+
+                    });
+                }
+                else {
+                    return res.status(409).send();
+                }
+
+            });
+        }
+        else {
+
+            return res.status(409).send();
+        }
+
+    });
+
+
+
+});
+
+// DELETE /user/:id/friends
+router.delete("/:id/friends", passport.authenticate("jwt", { session: false }), (req, res) => {
+    const newFriend = req.body["friend"];
+    const { errors, isValid } = validateBlockedListInput(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
+    User.findByIdAndUpdate(req.params["id"], { $pull: { "friends": newFriend } }, (error, user) => {
         if (user) {
-            User.findByIdAndUpdate(newFriend, {$addToSet: {"friends": user.id}}, (error, friend) => {    
-                if (friend) {
+            User.findByIdAndUpdate(newFriend, { $pull: { "friends": user.id } }, (error, remove) => {
+                if (remove) {
                     return res.status(200).send();
-                } else { 
+                } else {
                     return res.status(404).send();
                 }
             });
-        } else {    
+        } else {
             return res.status(404).send();
         }
-    });    
+    });
 });
 
 // GET /user/:id/blocked
@@ -205,12 +272,14 @@ router.post("/:id/blocked", passport.authenticate("jwt", { session: false }), (r
     if (!isValid) {
         return res.status(400).json(errors);
     }
-    User.findByIdAndUpdate(req.params["id"], {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
+    User.findByIdAndUpdate(req.params["id"], { $addToSet: { "blocked": blockedUser }, $pull: { "friends": blockedUser } }, (error, user) => {
+
+
         if (user) {
-            User.findByIdAndUpdate(blockedUser, {$addToSet: {"blocked": user.id}}, (error, block) => {    
+            User.findByIdAndUpdate(blockedUser, { $pull: { "friends": user.id } }, (error, block) => {
                 if (block) {
                     return res.status(200).send();
-                } else { 
+                } else {
                     return res.status(404).send();
                 }
             });
@@ -227,16 +296,16 @@ router.delete("/:id/blocked", passport.authenticate("jwt", { session: false }), 
     if (!isValid) {
         return res.status(400).json(errors);
     }
-    User.findByIdAndUpdate(req.params["id"], {$pull: {"blocked": blockedUser}}, (error, user) => {
+    User.findByIdAndUpdate(req.params["id"], { $pull: { "blocked": blockedUser } }, (error, user) => {
         if (user) {
-            User.findByIdAndUpdate(blockedUser, {$pull: {"blocked": user.id}}, (error, block) => {    
+            User.findByIdAndUpdate(blockedUser, { $pull: { "blocked": user.id } }, (error, block) => {
                 if (block) {
                     return res.status(200).send();
-                } else { 
+                } else {
                     return res.status(404).send();
                 }
             });
-        } else {    
+        } else {
             return res.status(404).send();
         }
     });

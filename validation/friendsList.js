@@ -7,14 +7,14 @@ module.exports = validateFriendsListInput = data => {
     friend = !isEmpty(friend) ? friend : "";
 
     if (Validator.isEmpty(friend)) {
-        errors.blocked = "Friend id is required.";
+        errors.friend = "Friend id is required.";
     }
     else if (!Validator.isMongoId(friend)) {
-        errors.blocked = "Friend id must be a valid MongoID";
+        errors.friend = "Friend id must be a valid MongoID";
     }
 
     return {
-        errors, 
+        errors,
         isValid: isEmpty(errors)
     };
 };
