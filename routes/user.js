@@ -5,7 +5,11 @@ const bcrypt = require("bcrypt");
 const passport = require("passport");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const validateCreateInput = require("../validation/createAccount");
 const validateLoginInput = require("../validation/login");
+const validateFriendsListInput = require("../validation/friendsList");
+const validateInterestsListInput = require("../validation/interestsList");
+const validateBlockedListInput = require("../validation/blockedList");
 const SECRET = process.env.SECRET;
 
 // Create a new Express router for "/user" route
@@ -13,25 +17,25 @@ const router = Router();
 
 // POST /user
 router.post("/login", (req, res) => {
-    const {errors, isValid} = validateLoginInput(req.body);
+    const { errors, isValid } = validateLoginInput(req.body);
 
     if (!isValid) {
         return res.status(400).json(errors);
-    } 
+    }
 
     const { phoneNumber, password } = req.body;
     User.findOne({ phoneNumber }).then((user) => {
-        if(!user){
+        if (!user) {
             errors.phoneNumber = "User not found.";
             return res.status(404).json(errors);
         }
-        bcrypt.compare(password, user.password).then( isMatch => {
-            if(isMatch){
+        bcrypt.compare(password, user.password).then(isMatch => {
+            if (isMatch) {
                 const payload = {
-                    user_name : user.phoneNumber
+                    phoneNumber : user.phoneNumber
                 };
-                jwt.sign(payload, process.env.SECRET, {expiresIn: 3600}, (err, token) =>{
-                    if(err){
+                jwt.sign(payload, process.env.SECRET, { expiresIn: 3600 }, (err, token) => {
+                    if (err) {
                         console.log(err);
                     }
                     return res.json({
@@ -39,7 +43,7 @@ router.post("/login", (req, res) => {
                     });
                 });
             } else {
-                return res.status(400).json({ password: "Password Incorrect"});
+                return res.status(400).json({ password: "Password Incorrect" });
             }
         });
     });
@@ -48,10 +52,10 @@ router.post("/login", (req, res) => {
 // POST /user/create
 router.post("/create", (req, res) => {
     const body = req.body;
-    // If any of the fields are not there, send a 400 Bad Request response
-    if (!body.firstName || !body.lastName || !body.phoneNumber || !body.dateOfBirth || !body.password) {
-        res.status(400).json({ message: "One or more fields not present" });
-        return;
+    
+    const { errors, isValid } = validateCreateInput(body);
+    if (!isValid) {
+        return res.status(400).json(errors);
     }
     // If there is a document already in the database, send a 409 Conflict response
     User.findOne({ phoneNumber: body.phoneNumber }, (err, user) => {
@@ -74,7 +78,7 @@ router.post("/create", (req, res) => {
                     }
                     user.password = hash;
                     user.save()
-                        .then(user => res.status(201).json(user))
+                        .then(() => res.status(201).json())
                         .catch(console.err);
                 });
             });
@@ -90,22 +94,169 @@ router.get("/current", passport.authenticate("jwt", { session: false }), (req, r
 
 // GET /user/{id}/profile
 router.get("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
-    const phoneNumber = req.params["id"];
-    User.findOne({ phoneNumber: phoneNumber }, { password: 0, phoneNumber: 0 }, (err, user) => {
+    const id = req.params["id"];
+    User.findById(id, { password: 0, phoneNumber: 0 }, (err, user) => {
         if (user) {
             let foundUser = user;
             res.status(200).send(foundUser);
         }
         else {
-            res.status(404).send({ message: "User doesn't exist"});
+            res.status(404).send({ message: "User doesn't exist" });
         }
     });
 });
 
 // PATCH /user/:id/profile
-router.patch('user/:id/profile', passport.authenticate("jwt", { session: false }), (req, res) => {
-    User.findOneAndUpdate({ phoneNumber: req.body.phoneNumber }, (req.body), {new: true});
+router.patch("/:id/profile", passport.authenticate("jwt", { session: false }), (req, res) => {
+    User.findByIdAndUpdate(req.params["id"], req.body, {new: true}, (error, user) => {
+        if (user) {
+            res.status(200).send();
+        } else {
+            res.status(404).send({ message: "User doesn't exist" });
+        }
+    });
 });
 
+// GET /user/{id}/interests
+router.get("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
+    User.findById(req.params["id"], { "interests": 1 }, (error, user) => {
+        if (user) {
+            return res.status(200).send(user);
+        } else {
+            return res.status(404).send({ message: "User not found" });
+        }
+    });
+});
+
+// POST /user/:id/interests
+router.post("/:id/interests", passport.authenticate("jwt", { session: false }), (req, res) => {
+    const body = req.body;
+    const { errors, isValid } = validateInterestsListInput(req.body);
+    if(!isValid) {
+        return res.status(400).json(errors);
+    }
+
+    User.findById(req.params["id"], (err, user) => {
+        if(!user) {
+            res.status(404).send({ message: "User not found" });
+        }
+        else {
+            if (user.interests.length == 0) {
+                user.interests = [body];
+                user.save(() => { res.status(200).send(); });
+            } else {
+                User.findById(req.params["id"],
+                    { $addToSet: { "interests.$[elem].values": body.values} }, { arrayFilters: [{"elem.category": body.category}] }, () => {
+                        res.status(200).send();
+                    });
+            }
+        }
+    });
+});
+
+//GET /user/:id/friends
+router.get("/:id/friends", passport.authenticate("jwt", { session: false }), (req, res) => {
+    User.findById(req.params["id"], { "friends": 1 }, (error, user) => {
+        if (user) {
+            return res.status(200).send(user);
+        } else {
+            return res.status(404).send();
+        }
+    });
+});
+
+// POST /user/:id/friends
+router.post("/:id/friends", passport.authenticate("jwt", { session: false }), (req,res) => {
+    const { errors, isValid } = validateFriendsListInput(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
+    const newFriend = req.body["friend"];
+    User.findByIdAndUpdate(req.params["id"], {$addToSet: {"friends": newFriend}}, (error, user) => {
+        if (user) {
+            User.findByIdAndUpdate(newFriend, {$addToSet: {"friends": user.id}}, (error, friend) => {    
+                if (friend) {
+                    return res.status(200).send();
+                } else { 
+                    return res.status(404).send();
+                }
+            });
+        } else {    
+            return res.status(404).send();
+        }
+    });    
+});
+
+// GET /user/:id/blocked
+router.get("/:id/blocked", passport.authenticate("jwt", { session: false }), (req, res) => {
+    User.findById(req.params["id"], { "blocked": 1 }, (error, user) => {
+        if (user) {
+            res.status(200).send(user);
+        } else {
+            res.status(404).send({ message: "User doesn't exist" });
+        }
+    });
+});
+
+// POST /user/:id/blocked
+router.post("/:id/blocked", passport.authenticate("jwt", { session: false }), (req, res) => {
+    const blockedUser = req.body["blocked"];
+    const { errors, isValid } = validateBlockedListInput(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
+    User.findByIdAndUpdate(req.params["id"], {$addToSet: {"blocked" : blockedUser}}, (error, user) => {
+        if (user) {
+            User.findByIdAndUpdate(blockedUser, {$addToSet: {"blocked": user.id}}, (error, block) => {    
+                if (block) {
+                    return res.status(200).send();
+                } else { 
+                    return res.status(404).send();
+                }
+            });
+        } else {
+            return res.status(404).send();
+        }
+    });
+});
+
+// DELETE /user/:id/blocked
+router.delete("/:id/blocked", passport.authenticate("jwt", { session: false }), (req, res) => {
+    const blockedUser = req.body["blocked"];
+    const { errors, isValid } = validateBlockedListInput(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
+    User.findByIdAndUpdate(req.params["id"], {$pull: {"blocked": blockedUser}}, (error, user) => {
+        if (user) {
+            User.findByIdAndUpdate(blockedUser, {$pull: {"blocked": user.id}}, (error, block) => {    
+                if (block) {
+                    return res.status(200).send();
+                } else { 
+                    return res.status(404).send();
+                }
+            });
+        } else {    
+            return res.status(404).send();
+        }
+    });
+});
+
+
+//delete
+router.post("/:id/friends", (req,res) => {
+    const id = req.params["id"];
+    const newFriend = req.body["friend"];
+    
+    User.findOneAndUpdate({"phoneNumber": id},
+        {$addToSet: {"friends": newFriend}},
+        (error, user) => {
+            if (user) {
+                return res.status(200).send();
+            } else { 
+                return res.status(404).send();
+            }
+        });
+});
 // Export this so it can be used outside
 module.exports = router;
