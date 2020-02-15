@@ -15,8 +15,10 @@ const newLevels = {
     }
 };
 
+//Http request colors
 winston.addColors(customLogger.colors);
 
+//Instantiate loggers
 logger = winston.createLogger({
     levels: newLevels.levels,
     transports: [
@@ -33,12 +35,15 @@ logger = winston.createLogger({
 
 logger.add(new winston.transports.Http(port));
 
+//Record when error occured
 const profiler = logger.startTimer();
 setTimeout(function () {
     profiler.done({ message: 'Http request: ' });
 }, 1000);
 
-//Logger Updates
+
+/*
+Logger Updates
 
 logger.profile('test', { level: 'http' });
 
@@ -55,3 +60,4 @@ logger.log({
 })
 
 logger.error('Oh no');
+*/
