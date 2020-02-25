@@ -2,7 +2,10 @@
 
 const winston = require('winston');
 
-//Logger Levels
+// Time variable
+var time = new Date();
+
+// Logger Levels
 
 const newLevels = {
     levels: {
@@ -11,7 +14,7 @@ const newLevels = {
     }
 };
 
-//Instantiate loggers
+// Instantiate loggers
 logger = winston.createLogger({
     levels: newLevels.levels,
     transports: [
@@ -26,9 +29,8 @@ logger = winston.createLogger({
     ]
 })
 
-//Record when error occured
-logger.log('info', 'Request made at %s', new Date(), {});
-
-logger.log('error', 'Error occured at %s', new Date(), {});
+// Record when error occured
+logger.info('Request made at ' + time, {});
+logger.error('Error occured at ' + time, {});
 
 module.exports = logger
