@@ -1,0 +1,100 @@
+{"message":"Http request: ","level":"info","durationMs":1004}
+{"message":"Http request: ","level":"info","durationMs":1004}
+{"message":"Http request: ","level":"info","durationMs":1001}
+{"message":"Http request: ","level":"info","durationMs":1012}
+{"message":"Http request: ","level":"info","durationMs":1004}
+{"message":"Http request: ","level":"info","durationMs":1011}
+{"message":"Http request: ","level":"info","durationMs":1002}
+{"message":"Http request: ","level":"info","durationMs":1005}
+{"message":"Http request: ","level":"info","durationMs":1017}
+{"message":"Http request: goonlike","level":"info","durationMs":1004}
+{"message":"Http request: goonlike","level":"info","durationMs":1003}
+{"message":"Http request: goonlike2","level":"info","durationMs":1015}
+{"message":"Http request: goonlike2","level":"info","durationMs":1004}
+{"message":"Http request: ","level":"info","durationMs":1005}
+{"message":"Http request: logger","level":"info","durationMs":1007}
+{"message":"Http request: ","level":"info","durationMs":1004}
+{"message":"Http request: ","level":"info","durationMs":1005}
+{"level":"info","durationMs":1011}
+{"level":"info","durationMs":1017}
+{"level":"info","durationMs":1014}
+{"level":"info","durationMs":1012}
+{"level":"info","durationMs":1009}
+{"level":"info","durationMs":1009}
+{"level":"info","durationMs":46}
+{"level":"info","durationMs":32}
+{"level":"info","durationMs":26}
+{"level":"info","durationMs":35}
+{"level":"info","durationMs":28}
+{"level":"info","durationMs":38}
+{"level":"info","durationMs":54}
+{"message":"Http request: ","level":"info","durationMs":40}
+{"level":"info","message":"Error occured"}
+{"message":"Information","level":"info"}
+{"level":"error","message":"Error occured"}
+{"level":"info","message":"Error occured"}
+{"message":"Information","level":"info"}
+{"message":"Error occured","level":"error"}
+{"level":"error","message":"Error occured"}
+{"level":"info","message":"Error occured"}
+{"message":"Information","level":"info"}
+{"message":"Error occured","level":"error"}
+{"level":"error","message":"Error occured"}
+{"level":"info","message":"Error occured"}
+{"message":"Information","level":"info"}
+{"message":"Error occured","level":"error"}
+{"level":"error","message":"Error occured"}
+{"level":"info","message":"Error occured"}
+{"message":"Information","level":"info"}
+{"message":"Error occured","level":"error"}
+{"level":"error","message":""}
+{"level":"info","message":""}
+{"message":"Information","level":"info"}
+{"message":"Error occured","level":"error"}
+{"level":"error"}
+{"level":"info"}
+{"message":"Information","level":"info"}
+{"message":"Error occured","level":"error"}
+{"level":"error"}
+{"level":"info"}
+{"message":"Information","level":"info"}
+{"message":"Error occured","level":"error"}
+{"level":"error"}
+{"level":"info"}
+{"message":"Information","level":"info"}
+{"level":"error","message":"Error occured at %s"}
+{"level":"error"}
+{"level":"info"}
+{"message":"Information","level":"info"}
+{"level":"error","message":"%s error occured at %s"}
+{"level":"error"}
+{"level":"info"}
+{"message":"Information","level":"info"}
+{"level":"error","message":"Error occured at %s"}
+{"level":"error"}
+{"level":"info"}
+{"message":"Information","level":"info"}
+{"level":"error","message":"Error occured at %s"}
+{"level":"error"}
+{"level":"info"}
+{"level":"info","message":"Request made at %s"}
+{"level":"error","message":"Error occured at %s"}
+{"level":"error","message":"Error occured at %s"}
+{"level":"info"}
+{"level":"info","message":"Request made at %s"}
+{"level":"error","message":"Error occured at %s"}
+{"level":"info","message":"Request made at %s"}
+{"level":"info","message":"Request made at %s"}
+{"level":"error","message":"Error occured at %s"}
+{"level":"info","message":"Request made at %s"}
+{"level":"error","message":"Error occured at %s"}
+{"level":"info","message":"Request made at %s"}
+{"level":"error","message":"Error occured at %s"}
+{"level":"info","message":"Request made at %s"}
+{"level":"error","message":"Error occured at %s"}
+{"level":"info","message":"Request made at %s"}
+{"level":"error","message":"Error occured at %s"}
+{"level":"info","message":"Request made at %s"}
+{"level":"error","message":"%d Error occured at %s"}
+{"level":"info","message":"Request made at %s"}
+{"level":"error","message":"Error occured at %s"}
