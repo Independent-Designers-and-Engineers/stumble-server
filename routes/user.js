@@ -173,99 +173,73 @@ router.post("/:id/friends", passport.authenticate("jwt", { session: false }), (r
     }
     const newFriend = req.body["friend"];
 
-    User.findById(newFriend.id, (error, user) => {
+    User.findById(newFriend, (error, user) => {
 
-        // console.log(user);
+        console.log(error);
+        console.log(user);
 
-        var continue1 = 0;
-
-        if (user.blocked.length != null) {
-            for (var i = 0; i < user.blocked.length; i++) {
-                if (req.params["id"].localeCompare(user.blocked[i]) == 0) {
-                    continue1 = 1;
+        if (user) {
+            if (user.blocked.length != 0) {
+                for (var i = 0; i < user.blocked.length; i++) {
+                    if (req.params["id"].localeCompare(user.blocked[i]) == 0) {
+                        console.log("inhere");
+                        return res.status(409).send();
+                    }
                 }
             }
         }
         else {
-            continue1 = 1;
+            return res.status(409).send();
         }
 
-        if (continue1 == 0) {
+        User.findById(req.params["id"], (error, user) => {
 
-            User.findById(req.params["id"], (error, inBlocked) => {
 
-                console.log(inBlocked);
-
-                var continue1 = 0;
-
-                if (user.blocked.length != null) {
-                    for (var i = 0; i < user.blocked.length; i++) {
-                        if (req.params["id"].localeCompare(user.blocked[i]) == 0) {
-                            continue1 = 1;
+            if (user) {
+                if (user.blocked.length != 0) {
+                    for (let i = 0; i < user.blocked.length; i++) {
+                        if (newFriend.localeCompare(user.blocked[i]) == 0) {
+                            return res.status(409).send();
                         }
                     }
                 }
-                else {
-                    continue1 = 1;
+            }
+            else {
+                return res.status(409).send();
+            }
+
+
+            User.findById(newFriend, (error, user) => {
+                let aInB = false;
+
+                for (let i = 0; i < user.pending.length; i++) {
+                    if (req.params["id"].localeCompare(user.pending[i]) == 0) {
+                        aInB = true;
+                        break;
+                    }
                 }
 
-                if (continue1 == 0) {
+                if (!aInB) {
+                    User.findByIdAndUpdate(req.params["id"], { $addToSet: { "pending": newFriend } }, (error, user) => {
 
-
-                    User.findById(newFriend.id, (error, userIn) => {
-
-                        var continue1 = 0;
-
-                        console.log(newFriend);
-
-                        if (userIn.pending.length != null) {
-                            for (var i = 0; i < userIn.pending.length; i++) {
-                                if (req.params["id"].localeCompare(userIn.pending[i]) == 0) {
-                                    console.log(req.params["id"]);
-                                    console.log(userIn.pending[i]);
-                                    continue1 = 1;
-                                }
-                            }
-                        }
-
-                        if (continue1 == 1) {
-
-                            console.log("frienship");
-
-                            User.findByIdAndUpdate(req.param["id"], { $addToSet: { "friends": newFriend }, $pull: { "pending": newFriend } }, (error, user) => {
-
-                                console.log(error);
-
-                                User.findByIdAndUpdate(newFriend.id, { $addToSet: { "friends": req.params["id"] }, $pull: { "pending": req.params["id"] } }, (error, user) => {
-
-                                    return res.status(200).send();
-                                });
-                            });
-
-
-                        }
-                        else {
-
-                            User.findByIdAndUpdate(newFriend, { $addToSet: { "pending": req.params["id"] } }, (error, user) => {
-
-                                console.log("added to pending");
-                                return res.status(200).send();
-                            });
-
-                        }
-
+                        return res.status(200).send();
                     });
                 }
                 else {
-                    return res.status(409).send();
+
+                    User.findByIdAndUpdate(req.params["id"], { $push: { "friends": newFriend }, $pull: { "pending": newFriend } }, (error, user) => {
+
+                        User.findByIdAndUpdate(newFriend, { $push: { "friends": req.params["id"] }, $pull: { "pending": req.params["id"] } }, (error, user) => {
+
+                            return res.status(200).send();
+                        });
+                    });
                 }
 
-            });
-        }
-        else {
 
-            return res.status(409).send();
-        }
+            });
+
+        });
 
     });
 
@@ -314,9 +288,8 @@ router.post("/:id/blocked", passport.authenticate("jwt", { session: false }), (r
     }
     User.findByIdAndUpdate(req.params["id"], { $addToSet: { "blocked": blockedUser }, $pull: { "friends": blockedUser } }, (error, user) => {
 
-
         if (user) {
-            User.findByIdAndUpdate(blockedUser, { $pull: { "friends": user.id } }, (error, block) => {
+            User.findByIdAndUpdate(blockedUser, { $pull: { "friends": user.id }, $addToSet: { "blocked": user.id } }, (error, block) => {
                 if (block) {
                     return res.status(200).send();
                 } else {
